@@ -13,6 +13,7 @@ from typing import NamedTuple, Final
 
 
 QUEUE_SIZE: Final = 10
+PROCESSES: Final = 2
 
 
 class PrinterResult(IntFlag):
@@ -88,7 +89,7 @@ def printer_ids() -> list[UUID]:
 
 
 def main() -> int:
-    with Manager() as manager, Pool(processes=5) as pool:
+    with Manager() as manager, Pool(processes=PROCESSES) as pool:
         printers = manager.list(
             [Printer(f"printer_{i}", manager.Queue(QUEUE_SIZE)) for i in range(5)]
         )
@@ -101,20 +102,17 @@ def main() -> int:
             [User(uuid4(), f"user_{i}", f"password_{i}") for i in range(5)]
         )
 
-        with Pool() as pool:
-            tokens = pool.starmap(
-                authenticate, [(user.name, user.password) for user in users]
-            )
-            results = pool.starmap(
-                perform_print,
-                [
-                    (job.printer.name, job.job, {}, token)
-                    for job, token in zip(jobs, tokens)
-                ],
-            )
-            pool.starmap(
-                logout, [(token, user.id) for token, user in zip(tokens, users)]
-            )
+        tokens = pool.starmap(
+            authenticate, [(user.name, user.password) for user in users]
+        )
+        results = pool.starmap(
+            perform_print,
+            [
+                (job.printer.name, job.job, {}, token)
+                for job, token in zip(jobs, tokens)
+            ],
+        )
+        pool.starmap(logout, [(token, user.id) for token, user in zip(tokens, users)])
 
     return 0
 
