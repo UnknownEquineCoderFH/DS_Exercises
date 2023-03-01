@@ -4,3 +4,4 @@ venv/*
 *.md
 __pychache__/*
 .env
+.commands/*
