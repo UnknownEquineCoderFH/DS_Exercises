@@ -1,0 +1,6 @@
+venv/*
+.gitignore
+.git/*
+*.md
+__pychache__/*
+.env
