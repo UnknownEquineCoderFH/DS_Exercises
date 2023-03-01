@@ -7,6 +7,8 @@ from queue import Queue
 from time import sleep
 from uuid import uuid4, UUID
 
+from random import random
+
 from enum import IntFlag, auto
 
 from typing import NamedTuple, Final
@@ -41,13 +43,17 @@ class PrintJob(NamedTuple):
     job: str
 
 
+def sleep_random() -> None:
+    sleep(random() * 3)
+
+
 def authenticate(user_name: str, password: str) -> UUID:
     """
     Returns a token as an int.
     -1 if not authorized.
     """
     print(f"Authenticating {user_name}...")
-    sleep(1)
+    sleep_random()
     return uuid4()
 
 
@@ -58,7 +64,7 @@ def perform_print(
     Returns a PrinterResult enum.
     """
     print(f"Printing {document} on {printer_id}...")
-    sleep(1)
+    sleep_random()
     return PrinterResult.SUCCESS
 
 
@@ -67,7 +73,7 @@ def logout(token: int, user_id: UUID) -> None:
     Invalidates the token.
     """
     print(f"Logging out {user_id}...")
-    sleep(1)
+    sleep_random()
 
 
 def queue_length(printer_id: UUID) -> int:
@@ -75,7 +81,7 @@ def queue_length(printer_id: UUID) -> int:
     Returns the number of jobs in the queue.
     """
     print(f"Getting queue length for {printer_id}...")
-    sleep(1)
+    sleep_random()
     return 0
 
 
@@ -84,14 +90,14 @@ def printer_ids() -> list[UUID]:
     Returns a list of printer ids.
     """
     print("Getting printer ids...")
-    sleep(1)
+    sleep_random()
     return []
 
 
 def main() -> int:
     with Manager() as manager, Pool(processes=PROCESSES) as pool:
         printers = manager.list(
-            [Printer(f"printer_{i}", manager.Queue(QUEUE_SIZE)) for i in range(5)]
+            [Printer(f"printer_{i}", manager.Queue(QUEUE_SIZE)) for i in range(1, 6)]
         )
 
         jobs = manager.list(
@@ -99,7 +105,7 @@ def main() -> int:
         )
 
         users = manager.list(
-            [User(uuid4(), f"user_{i}", f"password_{i}") for i in range(5)]
+            [User(uuid4(), f"user_{i}", f"password_{i}") for i in range(1, 6)]
         )
 
         tokens = pool.starmap(
